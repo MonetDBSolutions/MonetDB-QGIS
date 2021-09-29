@@ -224,8 +224,13 @@ class MonetDBeConnector:
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed
-        db = monetdbeconn.MonetDB("monetdb", "monetdb", "localhost", "demo")
         if result:
+            username = self.dlg.usernameEdit.text()
+            password = self.dlg.passwordEdit.text()
+            hostname = self.dlg.hostnameEdit.text()
+            database = self.dlg.databaseEdit.text()
+
+            db = monetdbeconn.MonetDB(username, password, hostname, database)
             data_points = db.fetch_points()
             vl = QgsVectorLayer("Point", "temporary_points", "memory")
             pr = vl.dataProvider()

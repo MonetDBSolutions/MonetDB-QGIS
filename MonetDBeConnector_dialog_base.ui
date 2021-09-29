@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>404</width>
-    <height>437</height>
+    <width>407</width>
+    <height>331</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,8 @@
   <widget class="QDialogButtonBox" name="button_box">
    <property name="geometry">
     <rect>
-     <x>50</x>
-     <y>380</y>
+     <x>40</x>
+     <y>270</y>
      <width>341</width>
      <height>32</height>
     </rect>
@@ -29,7 +29,7 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit">
+  <widget class="QLineEdit" name="usernameEdit">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -38,8 +38,11 @@
      <height>36</height>
     </rect>
    </property>
+   <property name="text">
+    <string>monetdb</string>
+   </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_2">
+  <widget class="QLineEdit" name="passwordEdit">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -48,8 +51,14 @@
      <height>36</height>
     </rect>
    </property>
+   <property name="text">
+    <string>monetdb</string>
+   </property>
+   <property name="echoMode">
+    <enum>QLineEdit::Password</enum>
+   </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_3">
+  <widget class="QLineEdit" name="hostnameEdit">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -58,8 +67,11 @@
      <height>36</height>
     </rect>
    </property>
+   <property name="text">
+    <string>localhost</string>
+   </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_4">
+  <widget class="QLineEdit" name="databaseEdit">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -68,15 +80,8 @@
      <height>36</height>
     </rect>
    </property>
-  </widget>
-  <widget class="QLineEdit" name="lineEdit_5">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>230</y>
-     <width>321</width>
-     <height>36</height>
-    </rect>
+   <property name="text">
+    <string>demo</string>
    </property>
   </widget>
  </widget>

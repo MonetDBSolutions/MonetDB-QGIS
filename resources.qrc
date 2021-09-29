@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/plugins/MonetDBeConnector" >
+    <qresource prefix="/plugins/MonetDBe-QGIS" >
         <file>icon.png</file>
     </qresource>
 </RCC>

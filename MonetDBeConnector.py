@@ -224,15 +224,16 @@ class MonetDBeConnector:
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed
+        db = monetdbeconn.MonetDB("monetdb", "monetdb", "localhost", "demo")
         if result:
-            data_points = monetdbeconn.fetch_points()
+            data_points = db.fetch_points()
             vl = QgsVectorLayer("Point", "temporary_points", "memory")
             pr = vl.dataProvider()
 
             fet = QgsFeature()
 
             for point in data_points:
-                fet.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(point[0], point[1])))
+                fet.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(float(point[0]), float(point[1]))))
                 pr.addFeatures([fet])
 
 

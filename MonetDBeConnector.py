@@ -23,7 +23,7 @@
 """
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtWidgets import QAction, QTableWidgetItem
 
 from qgis.core import (
   QgsApplication,
@@ -51,13 +51,14 @@ from qgis.core import (
   QgsVectorFileWriter,
   QgsWkbTypes,
   QgsSpatialIndex,
-  QgsVectorLayerUtils
+  QgsVectorLayerUtils,
 )
 
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
 from .MonetDBeConnector_dialog import MonetDBeConnectorDialog
+from .MonetDBeTableConfig_dialog import MonetDBeTableConfigDialog
 import os.path
 
 from . import monetdbeconn 
@@ -230,20 +231,49 @@ class MonetDBeConnector:
             hostname = self.dlg.hostnameEdit.text()
             database = self.dlg.databaseEdit.text()
 
-            db = monetdbeconn.MonetDB(username, password, hostname, database)
-            data_points = db.fetch_points()
-            vl = QgsVectorLayer("Point", "temporary_points", "memory")
-            pr = vl.dataProvider()
+            self.db = monetdbeconn.MonetDB(username, password, hostname, database)
+            table_conf = MonetDBeTableConfigDialog()
+            tables = self.db.query("SELECT name FROM sys.tables")
+            tables = [x[0] for x in tables]
 
-            fet = QgsFeature()
+            table_conf.tableWidget.setRowCount(len(tables))
+            table_conf.tableWidget.setColumnCount(1)
 
-            for point in data_points:
-                fet.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(float(point[0]), float(point[1]))))
-                pr.addFeatures([fet])
+            table_conf.tableWidget.setHorizontalHeaderLabels([u'Column1',
+                                                              u'Column2'])
 
+            for row in range(len(tables)):
+                for col in range(1):
+                    item = QTableWidgetItem(str(tables[row]).strip())
+                    table_conf.tableWidget.setItem(row, 0, item)
 
-            vl.updateExtents()
-                
-            QgsProject.instance().addMapLayer(vl)
+            table_conf.tableWidget.resizeColumnsToContents()
+            table_conf.show()
+            table_conf_result = table_conf.exec_()
+
+            if table_conf_result:
+                for item in table_conf.tableWidget.selectedItems():
+                    table_name = item.text()
+                    self.show_vector_layer(table_name)
+
+    def show_vector_layer(self, table_name):
+        query = "SELECT geom FROM " + table_name
+        data_points = self.db.query(query)
+
+        geom_type = self.db.get_column_type(data_points[0][0])
+
+        vl = QgsVectorLayer(geom_type, table_name, "memory")
+        pr = vl.dataProvider()
+
+        fet = QgsFeature()
+
+        for i in data_points:
+            data = i[0].strip()
+            fet.setGeometry(QgsGeometry.fromWkt(data))
+            pr.addFeatures([fet])
+
+        vl.updateExtents()
+            
+        QgsProject.instance().addMapLayer(vl)
 
 

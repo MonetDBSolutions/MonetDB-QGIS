@@ -23,7 +23,7 @@
 """
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QTableWidgetItem
+from qgis.PyQt.QtWidgets import QAction, QTableWidgetItem, QTableView
 
 from qgis.core import (
   QgsApplication,
@@ -243,6 +243,7 @@ class MonetDBeConnector:
 
             table_conf.tableWidget.setRowCount(len(tables))
             table_conf.tableWidget.setColumnCount(3)
+            table_conf.tableWidget.setSelectionBehavior(QTableView.SelectRows)
 
             table_conf.tableWidget.setHorizontalHeaderLabels([u'Table Name',
                                                               u'Schema Name',
@@ -262,12 +263,15 @@ class MonetDBeConnector:
             table_conf_result = table_conf.exec_()
 
             if table_conf_result:
-                for item in table_conf.tableWidget.selectedItems():
-                    table_name = item.text()
-                    self.show_vector_layer(table_name)
+                selected = []
+                for item in table_conf.tableWidget.selectedIndexes():
+                    selected.append(item.data())
 
-    def show_vector_layer(self, table_name):
-        query = "SELECT geom FROM " + table_name
+                self.show_vector_layer(selected[1], selected[0])
+                selected = []
+
+    def show_vector_layer(self, schema, table_name):
+        query = f"SELECT geom FROM {schema}.{table_name}"
         data_points = self.db.query(query)
 
         geom_type = self.db.get_column_type(data_points[0][0])

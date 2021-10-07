@@ -237,7 +237,7 @@ class MonetDBeConnector:
             _tables = [(x[0], x[1]) for x in tables]
             tables = []
             for i in _tables:
-                schema_names = self.db.query("SELECT name FROM sys.schemas WHERE id = " + str(i[1]))
+                schema_names = self.db.query(f"SELECT name FROM sys.schemas WHERE id = {str(i[1])}" )
                 i = (i[0], i[1], schema_names[0][0])
                 tables.append(i)
 
@@ -263,15 +263,17 @@ class MonetDBeConnector:
             table_conf_result = table_conf.exec_()
 
             if table_conf_result:
-                selected = []
-                for item in table_conf.tableWidget.selectedIndexes():
-                    selected.append(item.data())
+                selected = table_conf.tableWidget.selectedItems()
+                rows = list(self.chunk(selected, 3))
 
-                self.show_vector_layer(selected[1], selected[0])
-                selected = []
+                for i in rows:
+                    name = i[0].text()
+                    schema_name = i[1].text()
+                    print(name, schema_name)
+                    self.show_vector_layer(schema_name, name)
 
     def show_vector_layer(self, schema, table_name):
-        query = f"SELECT geom FROM {schema}.{table_name}"
+        query = f"SELECT st_asbinary(geom) FROM {schema}.{table_name}"
         data_points = self.db.query(query)
 
         geom_type = self.db.get_column_type(data_points[0][0])
@@ -282,13 +284,16 @@ class MonetDBeConnector:
         fet = QgsFeature()
 
         for i in data_points:
-            data = i[0].strip()
-            print(data)
-            fet.setGeometry(QgsGeometry.fromWkt(data))
+            g = QgsGeometry()
+            d = bytes.fromhex(i[0])
+            g.fromWkb(d)
+            fet.setGeometry(g)
             pr.addFeatures([fet])
 
         vl.updateExtents()
             
         QgsProject.instance().addMapLayer(vl)
 
+    def chunk(self, lst, n):
+        return zip(*[iter(lst)]*n)
 

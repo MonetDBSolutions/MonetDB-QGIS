@@ -59,6 +59,7 @@ from .resources import *
 # Import the code for the dialog
 from .MonetDBeConnector_dialog import MonetDBeConnectorDialog
 from .MonetDBeTableConfig_dialog import MonetDBeTableConfigDialog
+from .MonetDBeTableSelect import MonetDBeTableSelectDialog
 import os.path
 
 from . import monetdbeconn 
@@ -263,20 +264,58 @@ class MonetDBeConnector:
             table_conf_result = table_conf.exec_()
 
             if table_conf_result:
+                table_select = MonetDBeTableSelectDialog()
                 selected = table_conf.tableWidget.selectedItems()
                 rows = list(self.chunk(selected, 3))
 
+                col_names = []
                 for i in rows:
-                    name = i[0].text()
-                    schema_name = i[1].text()
-                    print(name, schema_name)
-                    self.show_vector_layer(schema_name, name)
+                    q = f"SELECT name FROM sys.describe_columns('{i[1].text()}', '{i[0].text()}')"
+                    result = self.db.query(q)
+                    for x in result:
+                        col_names.append((x[0], i[0].text(), i[1].text()))
 
-    def show_vector_layer(self, schema, table_name):
-        query = f"SELECT st_asbinary(geom) FROM {schema}.{table_name}"
+
+                table_select.tableWidget.setRowCount(len(col_names))
+                table_select.tableWidget.setColumnCount(3)
+                table_select.tableWidget.setSelectionBehavior(QTableView.SelectRows)
+
+                table_select.tableWidget.setHorizontalHeaderLabels([u'Col Name',
+                                                              u'Table Name',
+                                                              u'Schema'])
+                for row in range(len(col_names)):
+                    for col in range(1):
+                        table_item = QTableWidgetItem(str(col_names[row][0]).strip())
+                        table_select.tableWidget.setItem(row, 0, table_item)
+
+                        _table_name = QTableWidgetItem(str(col_names[row][1]).strip())
+                        table_select.tableWidget.setItem(row, 1, _table_name)
+
+                        table_schema_name = QTableWidgetItem(str(col_names[row][2]).strip())
+                        table_select.tableWidget.setItem(row, 2, table_schema_name)
+
+
+                table_select.tableWidget.resizeColumnsToContents()
+                table_select.show()
+                table_select_result = table_select.exec_()
+
+                if table_select_result:
+                    table_selected_cols = table_select.tableWidget.selectedItems()
+                    selected_rows = list(self.chunk(table_selected_cols, 3))
+
+                    for i in selected_rows:
+                        col_name = i[0].text()
+                        table_name = i[1].text()
+                        schema_name = i[2].text()
+                        self.show_vector_layer(schema_name, table_name, col_name)
+
+    def show_vector_layer(self, schema, table_name, column):
+        query_for_col_type = f"SELECT {column} FROM {schema}.{table_name}"
+        col_type_data = self.db.query(query_for_col_type)
+        geom_type = self.db.get_column_type(col_type_data[0][0])
+
+        query = f"SELECT st_asbinary({column}) FROM {schema}.{table_name}"
         data_points = self.db.query(query)
-
-        geom_type = self.db.get_column_type(data_points[0][0])
 
         vl = QgsVectorLayer(geom_type, table_name, "memory")
         pr = vl.dataProvider()

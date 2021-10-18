@@ -26,32 +26,10 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QTableWidgetItem, QTableView
 
 from qgis.core import (
-  QgsApplication,
-  QgsDataSourceUri,
-  QgsCategorizedSymbolRenderer,
-  QgsClassificationRange,
-  QgsPointXY,
   QgsProject,
-  QgsExpression,
-  QgsField,
-  QgsFields,
   QgsFeature,
-  QgsFeatureRequest,
-  QgsFeatureRenderer,
   QgsGeometry,
-  QgsGraduatedSymbolRenderer,
-  QgsMarkerSymbol,
-  QgsMessageLog,
-  QgsRectangle,
-  QgsRendererCategory,
-  QgsRendererRange,
-  QgsSymbol,
-  QgsVectorDataProvider,
   QgsVectorLayer,
-  QgsVectorFileWriter,
-  QgsWkbTypes,
-  QgsSpatialIndex,
-  QgsVectorLayerUtils,
 )
 
 # Initialize Qt resources from file resources.py
@@ -62,7 +40,8 @@ from .MonetDBeTableConfig_dialog import MonetDBeTableConfigDialog
 from .MonetDBeTableSelect import MonetDBeTableSelectDialog
 import os.path
 
-from . import monetdbeconn 
+from . import monetdbeconn
+
 
 class MonetDBeConnector:
     """QGIS Plugin Implementation."""
@@ -113,7 +92,6 @@ class MonetDBeConnector:
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('MonetDBeConnector', message)
-
 
     def add_action(
         self,
@@ -202,7 +180,6 @@ class MonetDBeConnector:
         # will be set False in run()
         self.first_start = True
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -211,13 +188,10 @@ class MonetDBeConnector:
                 action)
             self.iface.removeToolBarIcon(action)
 
-
     def run(self):
         """Run method that performs all the real work"""
 
-        # Create the dialog with elements (after translation) and keep reference
-        # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        if self.first_start == True:
+        if self.first_start:
             self.first_start = False
             self.dlg = MonetDBeConnectorDialog()
 
@@ -232,82 +206,19 @@ class MonetDBeConnector:
             hostname = self.dlg.hostnameEdit.text()
             database = self.dlg.databaseEdit.text()
 
-            self.db = monetdbeconn.MonetDB(username, password, hostname, database)
-            table_conf = MonetDBeTableConfigDialog()
-            tables = self.db.query("SELECT name, schema_id FROM sys._tables WHERE system = False")
-            _tables = [(x[0], x[1]) for x in tables]
-            tables = []
-            for i in _tables:
-                schema_names = self.db.query(f"SELECT name FROM sys.schemas WHERE id = {str(i[1])}" )
-                i = (i[0], i[1], schema_names[0][0])
-                tables.append(i)
+            self.db = monetdbeconn.MonetDB(username, password,
+                                           hostname, database)
 
-            table_conf.tableWidget.setRowCount(len(tables))
-            table_conf.tableWidget.setColumnCount(3)
-            table_conf.tableWidget.setSelectionBehavior(QTableView.SelectRows)
-
-            table_conf.tableWidget.setHorizontalHeaderLabels([u'Table Name',
-                                                              u'Schema Name',
-                                                              u'Schema ID'])
-
-            for row in range(len(tables)):
-                for col in range(1):
-                    table_item = QTableWidgetItem(str(tables[row][0]).strip())
-                    table_conf.tableWidget.setItem(row, 0, table_item)
-                    table_schema_id = QTableWidgetItem(str(tables[row][1]).strip())
-                    table_conf.tableWidget.setItem(row, 2, table_schema_id)
-                    table_schema_name = QTableWidgetItem(str(tables[row][2]).strip())
-                    table_conf.tableWidget.setItem(row, 1, table_schema_name)
+            table_conf = self.show_table_select_dialog()
 
             table_conf.tableWidget.resizeColumnsToContents()
             table_conf.show()
             table_conf_result = table_conf.exec_()
 
             if table_conf_result:
-                table_select = MonetDBeTableSelectDialog()
-                selected = table_conf.tableWidget.selectedItems()
-                rows = list(self.chunk(selected, 3))
-
-                col_names = []
-                for i in rows:
-                    q = f"SELECT name FROM sys.describe_columns('{i[1].text()}', '{i[0].text()}')"
-                    result = self.db.query(q)
-                    for x in result:
-                        col_names.append((x[0], i[0].text(), i[1].text()))
-
-
-                table_select.tableWidget.setRowCount(len(col_names))
-                table_select.tableWidget.setColumnCount(3)
-                table_select.tableWidget.setSelectionBehavior(QTableView.SelectRows)
-
-                table_select.tableWidget.setHorizontalHeaderLabels([u'Col Name',
-                                                              u'Table Name',
-                                                              u'Schema'])
-                for row in range(len(col_names)):
-                    for col in range(1):
-                        table_item = QTableWidgetItem(str(col_names[row][0]).strip())
-                        table_select.tableWidget.setItem(row, 0, table_item)
-
-                        _table_name = QTableWidgetItem(str(col_names[row][1]).strip())
-                        table_select.tableWidget.setItem(row, 1, _table_name)
-
-                        table_schema_name = QTableWidgetItem(str(col_names[row][2]).strip())
-                        table_select.tableWidget.setItem(row, 2, table_schema_name)
-
-
-                table_select.tableWidget.resizeColumnsToContents()
-                table_select.show()
-                table_select_result = table_select.exec_()
-
-                if table_select_result:
-                    table_selected_cols = table_select.tableWidget.selectedItems()
-                    selected_rows = list(self.chunk(table_selected_cols, 3))
-
-                    for i in selected_rows:
-                        col_name = i[0].text()
-                        table_name = i[1].text()
-                        schema_name = i[2].text()
-                        self.show_vector_layer(schema_name, table_name, col_name)
+                out = self.show_table_config_dialog(table_conf)
+                if out is not None:
+                    self.show_vector_layer(out[0], out[1], out[2])
 
     def show_vector_layer(self, schema, table_name, column):
         query_for_col_type = f"SELECT {column} FROM {schema}.{table_name}"
@@ -319,6 +230,7 @@ class MonetDBeConnector:
 
         vl = QgsVectorLayer(geom_type, table_name, "memory")
         pr = vl.dataProvider()
+        vl.startEditing()
 
         fet = QgsFeature()
 
@@ -330,9 +242,98 @@ class MonetDBeConnector:
             pr.addFeatures([fet])
 
         vl.updateExtents()
-            
+        vl.commitChanges()
+
         QgsProject.instance().addMapLayer(vl)
+
+    def show_table_select_dialog(self):
+        table_conf = MonetDBeTableConfigDialog()
+        tables = self.db.query(
+            "SELECT name, schema_id FROM sys._tables WHERE system = False"
+        )
+
+        _tables = [(x[0], x[1]) for x in tables]
+        tables = []
+        for i in _tables:
+            schema_names = self.db.query(
+                f"SELECT name FROM sys.schemas WHERE id = {str(i[1])}"
+            )
+            i = (i[0], i[1], schema_names[0][0])
+            tables.append(i)
+
+        table_conf.tableWidget.setRowCount(len(tables))
+        table_conf.tableWidget.setColumnCount(3)
+        table_conf.tableWidget.setSelectionBehavior(QTableView.SelectRows)
+
+        table_conf.tableWidget.setHorizontalHeaderLabels([u'Table Name',
+                                                          u'Schema Name',
+                                                          u'Schema ID'])
+
+        for row in range(len(tables)):
+            for col in range(1):
+                table_item = QTableWidgetItem(
+                    str(tables[row][0]).strip()
+                )
+                table_conf.tableWidget.setItem(row, 0, table_item)
+
+                table_schema_id = QTableWidgetItem(
+                    str(tables[row][1]).strip()
+                )
+                table_conf.tableWidget.setItem(row, 2, table_schema_id)
+
+                table_schema_name = QTableWidgetItem(
+                    str(tables[row][2]).strip()
+                )
+                table_conf.tableWidget.setItem(row, 1, table_schema_name)
+
+        return table_conf
+
+    def show_table_config_dialog(self, table_conf):
+        table_select = MonetDBeTableSelectDialog()
+        selected = table_conf.tableWidget.selectedItems()
+        rows = list(self.chunk(selected, 3))
+
+        col_names = []
+        for i in rows:
+            q = f"SELECT name FROM sys.describe_columns('{i[1].text()}', '{i[0].text()}')"
+            result = self.db.query(q)
+            for x in result:
+                col_names.append((x[0], i[0].text(), i[1].text()))
+
+        table_select.tableWidget.setRowCount(len(col_names))
+        table_select.tableWidget.setColumnCount(3)
+        table_select.tableWidget.setSelectionBehavior(QTableView.SelectRows)
+
+        table_select.tableWidget.setHorizontalHeaderLabels([
+             u'Col Name',
+             u'Table Name',
+             u'Schema'
+        ])
+        for row in range(len(col_names)):
+            for col in range(1):
+                table_item = QTableWidgetItem(str(col_names[row][0]).strip())
+                table_select.tableWidget.setItem(row, 0, table_item)
+
+                _table_name = QTableWidgetItem(str(col_names[row][1]).strip())
+                table_select.tableWidget.setItem(row, 1, _table_name)
+
+                schema_name = QTableWidgetItem(str(col_names[row][2]).strip())
+                table_select.tableWidget.setItem(row, 2, schema_name)
+
+        table_select.tableWidget.resizeColumnsToContents()
+        table_select.show()
+        table_select_result = table_select.exec_()
+
+        if table_select_result:
+            table_selected_cols = table_select.tableWidget.selectedItems()
+            selected_rows = list(self.chunk(table_selected_cols, 3))
+
+            for i in selected_rows:
+                col_name = i[0].text()
+                table_name = i[1].text()
+                schema_name = i[2].text()
+
+                return (schema_name, table_name, col_name)
 
     def chunk(self, lst, n):
         return zip(*[iter(lst)]*n)
-

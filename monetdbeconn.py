@@ -1,10 +1,10 @@
 import pymonetdb
 
-class MonetDB:
 
+class MonetDB:
     def __init__(self, username, password, hostname, database):
-        conn = pymonetdb.connect(username=username, password=password, 
-                                hostname=hostname, database=database)
+        conn = pymonetdb.connect(username=username, password=password,
+                                 hostname=hostname, database=database)
         self.conn = conn
 
     def query(self, q):
@@ -13,7 +13,7 @@ class MonetDB:
         return cursor.fetchall()
 
     def get_column_type(self, col):
-        types = ["MULTIPOINT", "LINESTRING", "MULTILINESTRING"]
+        types = ["MULTIPOINT", "LINESTRING", "MULTILINESTRING", "POLYGON"]
         for x in types:
             if x in col:
                 return x

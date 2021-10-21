@@ -37,6 +37,9 @@ def show_table_config_dialog(table_conf, db):
             schema_name = QTableWidgetItem(str(col_names[row][2]).strip())
             table_select.tableWidget.setItem(row, 2, schema_name)
 
+            interpretation = QTableWidgetItem("")
+            table_select.tableWidget.setItem(row, 3, interpretation)
+
     table_select.tableWidget.resizeColumnsToContents()
     table_select.show()
     table_select_result = table_select.exec_()
@@ -44,6 +47,7 @@ def show_table_config_dialog(table_conf, db):
     if table_select_result:
         table_selected_cols = table_select.tableWidget.selectedItems()
         selected_rows = list(chunk(table_selected_cols, 4))
+        column_settings = []
 
         for i in selected_rows:
             col_name = i[0].text()
@@ -51,8 +55,9 @@ def show_table_config_dialog(table_conf, db):
             schema_name = i[2].text()
             interpret_as = i[3].text()
 
-            return (schema_name, table_name, col_name, interpret_as)
+            column_settings.append((schema_name, table_name, col_name, interpret_as))
 
+        return column_settings
 
 def chunk(lst, n):
     return zip(*[iter(lst)]*n)

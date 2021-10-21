@@ -219,8 +219,10 @@ class MonetDBeConnector:
                 out = table_config_dialog.show_table_config_dialog(
                         table_conf, self.db
                 )
+
                 if out is not None:
-                    self.show_vector_layer(out[0], out[1], out[2], out[3])
+                    for s in out:
+                        self.show_vector_layer(s[0], s[1], s[2], s[3])
 
     def show_vector_layer(self, schema, table_name, column, interpretation):
         query_for_col_type = f"SELECT {column} FROM {schema}.{table_name}"

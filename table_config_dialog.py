@@ -17,13 +17,14 @@ def show_table_config_dialog(table_conf, db):
             col_names.append((x[0], i[0].text(), i[1].text()))
 
     table_select.tableWidget.setRowCount(len(col_names))
-    table_select.tableWidget.setColumnCount(3)
+    table_select.tableWidget.setColumnCount(4)
     table_select.tableWidget.setSelectionBehavior(QTableView.SelectRows)
 
     table_select.tableWidget.setHorizontalHeaderLabels([
          u'Col Name',
          u'Table Name',
-         u'Schema'
+         u'Schema',
+         u'Interpret as'
     ])
     for row in range(len(col_names)):
         for col in range(1):
@@ -42,14 +43,15 @@ def show_table_config_dialog(table_conf, db):
 
     if table_select_result:
         table_selected_cols = table_select.tableWidget.selectedItems()
-        selected_rows = list(chunk(table_selected_cols, 3))
+        selected_rows = list(chunk(table_selected_cols, 4))
 
         for i in selected_rows:
             col_name = i[0].text()
             table_name = i[1].text()
             schema_name = i[2].text()
+            interpret_as = i[3].text()
 
-            return (schema_name, table_name, col_name)
+            return (schema_name, table_name, col_name, interpret_as)
 
 
 def chunk(lst, n):

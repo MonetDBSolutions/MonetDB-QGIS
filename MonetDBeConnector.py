@@ -216,16 +216,23 @@ class MonetDBeConnector:
             table_conf_result = table_conf.exec_()
 
             if table_conf_result:
-                out = table_config_dialog.show_table_config_dialog(table_conf, self.db)
+                out = table_config_dialog.show_table_config_dialog(
+                        table_conf, self.db
+                )
                 if out is not None:
-                    self.show_vector_layer(out[0], out[1], out[2])
+                    self.show_vector_layer(out[0], out[1], out[2], out[3])
 
-    def show_vector_layer(self, schema, table_name, column):
+    def show_vector_layer(self, schema, table_name, column, interpretation):
         query_for_col_type = f"SELECT {column} FROM {schema}.{table_name}"
         col_type_data = self.db.query(query_for_col_type)
         geom_type = self.db.get_column_type(col_type_data[0][0])
 
-        query = f"SELECT st_asbinary(st_transform({column},4326)) FROM {schema}.{table_name}"
+        query = ""
+        if interpretation:
+            query = f"SELECT st_asbinary(st_transform({column},{interpretation})) FROM {schema}.{table_name}"
+        else:
+            query = f"SELECT st_asbinary({column}) FROM {schema}.{table_name}"
+
         data_points = self.db.query(query)
 
         vl = QgsVectorLayer(geom_type, table_name, "memory")

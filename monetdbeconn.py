@@ -13,7 +13,7 @@ class MonetDB:
         return cursor.fetchall()
 
     def get_column_type(self, col):
-        types = ["MULTIPOINT", "LINESTRING", "MULTILINESTRING", "POLYGON"]
+        types = ["MULTIPOINT", "LINESTRING", "MULTILINESTRING", "POLYGON", "MULTIPOLYGON"]
         for x in types:
             if x in col:
                 return x

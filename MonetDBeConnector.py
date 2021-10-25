@@ -37,6 +37,7 @@ from .resources import *
 # Import the code for the dialog
 from .MonetDBeConnector_dialog import MonetDBeConnectorDialog
 import os.path
+import _thread
 
 from . import monetdbeconn
 from . import table_config_dialog
@@ -201,13 +202,13 @@ class MonetDBeConnector:
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
-            username = self.dlg.usernameEdit.text()
-            password = self.dlg.passwordEdit.text()
-            hostname = self.dlg.hostnameEdit.text()
-            database = self.dlg.databaseEdit.text()
+            self.username = self.dlg.usernameEdit.text()
+            self.password = self.dlg.passwordEdit.text()
+            self.hostname = self.dlg.hostnameEdit.text()
+            self.database = self.dlg.databaseEdit.text()
 
-            self.db = monetdbeconn.MonetDB(username, password,
-                                           hostname, database)
+            self.db = monetdbeconn.MonetDB(self.username, self.password,
+                                           self.hostname, self.database)
 
             table_conf = table_select_dialog.show_table_select_dialog(self.db)
 
@@ -222,12 +223,16 @@ class MonetDBeConnector:
 
                 if out is not None:
                     for s in out:
-                        self.show_vector_layer(s[0], s[1], s[2], s[3])
+                        _thread.start_new_thread(self.show_vector_layer,
+                                                (s[0], s[1], s[2], s[3]))
 
     def show_vector_layer(self, schema, table_name, column, interpretation):
+        db = monetdbeconn.MonetDB(self.username, self.password,
+                                  self.hostname, self.database)
+
         query_for_col_type = f"SELECT {column} FROM {schema}.{table_name}"
-        col_type_data = self.db.query(query_for_col_type)
-        geom_type = self.db.get_column_type(col_type_data[0][0])
+        col_type_data = db.query(query_for_col_type)
+        geom_type = db.get_column_type(col_type_data[0][0])
 
         query = ""
         if interpretation:
@@ -235,7 +240,7 @@ class MonetDBeConnector:
         else:
             query = f"SELECT st_asbinary({column}) FROM {schema}.{table_name}"
 
-        data_points = self.db.query(query)
+        data_points = db.query(query)
 
         vl = QgsVectorLayer(geom_type, table_name, "memory")
         pr = vl.dataProvider()

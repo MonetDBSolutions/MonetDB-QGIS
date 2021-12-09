@@ -246,10 +246,9 @@ class MonetDBeConnector:
         pr = vl.dataProvider()
         vl.startEditing()
 
-        fet = QgsFeature()
-
-        for i in data_points:
+        for count, i in enumerate(data_points):
             g = QgsGeometry()
+            fet = QgsFeature()
             d = bytes.fromhex(i[0])
             g.fromWkb(d)
             fet.setGeometry(g)

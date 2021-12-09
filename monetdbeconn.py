@@ -1,6 +1,5 @@
 import pymonetdb
 
-
 class MonetDB:
     def __init__(self, username, password, hostname, database):
         conn = pymonetdb.connect(username=username, password=password,

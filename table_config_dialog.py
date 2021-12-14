@@ -1,11 +1,11 @@
-from .MonetDBeTableSelect import MonetDBeTableSelectDialog
+from .MonetDBTableSelect import MonetDBTableSelectDialog
 from qgis.PyQt.QtWidgets import QTableWidgetItem, QTableView
 
 #
 # Dialog that shows the table rows selection screen
 #
 def show_table_config_dialog(table_conf, db):
-    table_select = MonetDBeTableSelectDialog()
+    table_select = MonetDBTableSelectDialog()
     selected = table_conf.tableWidget.selectedItems()
     rows = list(chunk(selected, 3))
 

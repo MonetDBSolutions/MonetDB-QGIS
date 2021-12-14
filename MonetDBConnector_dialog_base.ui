@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MonetDBeConnectorDialogBase</class>
+ <class>MonetDBConnectorDialogBase</class>
  <widget class="QDialog" name="MonetDBeConnectorDialogBase">
   <property name="geometry">
    <rect>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MonetDBeConnector</string>
+   <string>MonetDBConnector</string>
   </property>
   <widget class="QDialogButtonBox" name="button_box">
    <property name="geometry">
@@ -90,7 +90,7 @@
   <connection>
    <sender>button_box</sender>
    <signal>accepted()</signal>
-   <receiver>MonetDBeConnectorDialogBase</receiver>
+   <receiver>MonetDBConnectorDialogBase</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -106,7 +106,7 @@
   <connection>
    <sender>button_box</sender>
    <signal>rejected()</signal>
-   <receiver>MonetDBeConnectorDialogBase</receiver>
+   <receiver>MonetDBConnectorDialogBase</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

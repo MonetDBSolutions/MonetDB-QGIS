@@ -18,7 +18,7 @@ from qgis.PyQt.QtGui import QIcon
 
 
 
-class MonetDBeConnectorDialogTest(unittest.TestCase):
+class MonetDBConnectorDialogTest(unittest.TestCase):
     """Test rerources work."""
 
     def setUp(self):
@@ -31,12 +31,12 @@ class MonetDBeConnectorDialogTest(unittest.TestCase):
 
     def test_icon_png(self):
         """Test we can click OK."""
-        path = ':/plugins/MonetDBeConnector/icon.png'
+        path = ':/plugins/MonetDBConnector/icon.png'
         icon = QIcon(path)
         self.assertFalse(icon.isNull())
 
 if __name__ == "__main__":
-    suite = unittest.makeSuite(MonetDBeConnectorResourcesTest)
+    suite = unittest.makeSuite(MonetDBConnectorResourcesTest)
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
 

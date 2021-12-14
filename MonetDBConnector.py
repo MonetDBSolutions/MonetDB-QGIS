@@ -207,7 +207,7 @@ class MonetDBConnector:
             self.hostname = self.dlg.hostnameEdit.text()
             self.database = self.dlg.databaseEdit.text()
 
-            self.db = monetdbeconn.MonetDB(self.username, self.password,
+            self.db = monetdbconn.MonetDB(self.username, self.password,
                                            self.hostname, self.database)
 
             table_conf = table_select_dialog.show_table_select_dialog(self.db)
@@ -227,7 +227,7 @@ class MonetDBConnector:
                                                 (s[0], s[1], s[2], s[3]))
 
     def show_vector_layer(self, schema, table_name, column, interpretation):
-        db = monetdbeconn.MonetDB(self.username, self.password,
+        db = monetdbconn.MonetDB(self.username, self.password,
                                   self.hostname, self.database)
 
         query_for_col_type = f"SELECT {column} FROM {schema}.{table_name}"

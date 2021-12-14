@@ -1,7 +1,7 @@
 #/***************************************************************************
-# MonetDBeConnector
+# MonetDBConnector
 #
-# MonetDBeConnector
+# MonetDBConnector
 #							 -------------------
 #		begin				: 2021-09-27
 #		git sha				: $Format:%H$
@@ -38,15 +38,15 @@ LOCALES =
 # translation
 SOURCES = \
 	__init__.py \
-	MonetDBeConnector.py MonetDBeConnector_dialog.py
+	MonetDBConnector.py MonetDBConnector_dialog.py
 
-PLUGINNAME = MonetDBeConnector
+PLUGINNAME = MonetDBConnector
 
 PY_FILES = \
 	__init__.py \
-	MonetDBeConnector.py MonetDBeConnector_dialog.py
+	MonetDBConnector.py MonetDBConnector_dialog.py
 
-UI_FILES = MonetDBeConnector_dialog_base.ui
+UI_FILES = MonetDBConnector_dialog_base.ui
 
 EXTRAS = metadata.txt icon.png
 

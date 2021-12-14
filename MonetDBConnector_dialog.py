@@ -32,7 +32,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'MonetDBConnector_dialog_base.ui'))
 
 
-class MonetDBeConnectorDialog(QtWidgets.QDialog, FORM_CLASS):
+class MonetDBConnectorDialog(QtWidgets.QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         """Constructor."""
         super(MonetDBConnectorDialog, self).__init__(parent)

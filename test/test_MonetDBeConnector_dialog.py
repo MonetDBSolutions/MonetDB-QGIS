@@ -16,18 +16,18 @@ import unittest
 
 from qgis.PyQt.QtGui import QDialogButtonBox, QDialog
 
-from MonetDBeConnector_dialog import MonetDBeConnectorDialog
+from MonetDBConnector_dialog import MonetDBConnectorDialog
 
 from utilities import get_qgis_app
 QGIS_APP = get_qgis_app()
 
 
-class MonetDBeConnectorDialogTest(unittest.TestCase):
+class MonetDBConnectorDialogTest(unittest.TestCase):
     """Test dialog works."""
 
     def setUp(self):
         """Runs before each test."""
-        self.dialog = MonetDBeConnectorDialog(None)
+        self.dialog = MonetDBConnectorDialog(None)
 
     def tearDown(self):
         """Runs after each test."""
@@ -49,7 +49,7 @@ class MonetDBeConnectorDialogTest(unittest.TestCase):
         self.assertEqual(result, QDialog.Rejected)
 
 if __name__ == "__main__":
-    suite = unittest.makeSuite(MonetDBeConnectorDialogTest)
+    suite = unittest.makeSuite(MonetDBConnectorDialogTest)
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
 

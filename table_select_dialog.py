@@ -1,9 +1,9 @@
 from qgis.PyQt.QtWidgets import QTableWidgetItem, QTableView
-from .MonetDBeTableConfig_dialog import MonetDBeTableConfigDialog
+from .MonetDBTableConfig_dialog import MonetDBTableConfigDialog
 
 
 def show_table_select_dialog(db):
-    table_conf = MonetDBeTableConfigDialog()
+    table_conf = MonetDBTableConfigDialog()
     tables = db.query(
         "SELECT name, schema_id FROM sys._tables WHERE system = False"
     )

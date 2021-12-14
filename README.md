@@ -1,6 +1,6 @@
-# MonetDBe-QGIS
+# MonetDB-QGIS
 
-Plugin for QGIS to connect to MonetDBe
+Plugin for QGIS to connect to MonetDB
 
 
 # Prerequisites

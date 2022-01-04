@@ -6,13 +6,13 @@
 name=MonetDBConnector
 qgisMinimumVersion=3.0
 description=MonetDBConnector
-version=0.1
+version=1.0.0
 author=MonetDBSolutions
 email=info@monetdb.org
 
 about=A connector for MonetDB
 
-tracker=http://bugs
+tracker=https://github.com/MonetDBSolutions/MonetDB-QGIS/issues
 repository=https://github.com/MonetDBSolutions/MonetDB-QGIS
 # End of mandatory metadata
 
@@ -23,7 +23,7 @@ hasProcessingProvider=no
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=python
+tags=python, database
 
 homepage=http://monetdb.org
 category=Plugins
@@ -37,7 +37,7 @@ deprecated=False
 # Since QGIS 3.8, a comma separated list of plugins to be installed
 # (or upgraded) can be specified.
 # Check the documentation for more information.
-# plugin_dependencies=
+# plugin_dependencies=pymonetdb
 
 Category of the plugin: Raster, Vector, Database or Web
 # category=Database

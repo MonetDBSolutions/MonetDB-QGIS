@@ -26,11 +26,14 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QTableWidgetItem, QTableView
 
 from qgis.core import (
+  Qgis,
   QgsProject,
   QgsFeature,
   QgsGeometry,
   QgsVectorLayer,
 )
+
+from .logger import Logger
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -74,6 +77,8 @@ class MonetDBConnector:
         # Declare instance attributes
         self.actions = []
         self.menu = self.tr(u'&MonetDBConnector')
+
+        self.logger = Logger()
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
@@ -195,6 +200,8 @@ class MonetDBConnector:
         if self.first_start:
             self.first_start = False
             self.dlg = MonetDBConnectorDialog()
+        
+        self.logger.log("Succesfully initialized plugin", Qgis.Info)
 
         # show the dialog
         self.dlg.show()
@@ -207,8 +214,10 @@ class MonetDBConnector:
             self.hostname = self.dlg.hostnameEdit.text()
             self.database = self.dlg.databaseEdit.text()
 
+            self.logger.log(f"Connecting to hostname {self.hostname} with credentials: {self.username}, {self.database}", Qgis.Info)
+
             self.db = monetdbconn.MonetDB(self.username, self.password,
-                                           self.hostname, self.database)
+                                           self.hostname, self.database, self.logger)
 
             table_conf = table_select_dialog.show_table_select_dialog(self.db)
 
@@ -228,11 +237,30 @@ class MonetDBConnector:
 
     def show_vector_layer(self, schema, table_name, column, interpretation):
         db = monetdbconn.MonetDB(self.username, self.password,
-                                  self.hostname, self.database)
+                                  self.hostname, self.database, self.logger)
+
+        self.logger.log(
+            f"""Drawing vector layer with parameters: 
+                schema={schema}, table_name={table_name} 
+                column={column}, interpretation={interpretation} 
+             """, Qgis.Info
+        )
 
         query_for_col_type = f"SELECT {column} FROM {schema}.{table_name}"
+
+        self.logger.log(f"query_for_col_type: \n {query_for_col_type}", Qgis.Info) 
+
         col_type_data = db.query(query_for_col_type)
-        geom_type = db.get_column_type(col_type_data[0][0])
+
+        self.logger.log(f"col_type_data: {col_type_data}", Qgis.Info) 
+
+        geom_type = None
+
+        try:
+            geom_type = db.get_column_type(col_type_data[0][0])
+        except IndexError:
+            self.logger.log(f"Unable to get the GEOM type from this table.", Qgis.Critical) 
+            
 
         query = ""
         if interpretation:
@@ -241,6 +269,8 @@ class MonetDBConnector:
             query = f"SELECT st_asbinary({column}) FROM {schema}.{table_name}"
 
         data_points = db.query(query)
+
+        self.logger.log(f"Received data points length: {len(data_points)}", Qgis.Info) 
 
         vl = QgsVectorLayer(geom_type, table_name, "memory")
         pr = vl.dataProvider()

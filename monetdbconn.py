@@ -16,7 +16,7 @@ class MonetDB:
         cursor = self.conn.cursor()
         self.logger.log(f"About to execute query:\n {q}", Qgis.Info)
         count = cursor.execute(q)
-        if count >= 0:
+        if count == 0:
             self.logger.log(f"Did not receive rows from previous query, table might be empty", Qgis.Warning)
         else:
             self.logger.log(f"Succesfully fetched {count} rows", Qgis.Info)

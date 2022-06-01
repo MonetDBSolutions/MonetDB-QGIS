@@ -271,12 +271,15 @@ class MonetDBConnector:
         data_points = db.query(query)
 
         self.logger.log(f"Received data points length: {len(data_points)}", Qgis.Info) 
-
+      
         vl = QgsVectorLayer(geom_type, table_name, "memory")
+        if not vl.isValid():
+            self.logger.error("layer failed to load", Qgis.Critical)
+
         pr = vl.dataProvider()
         vl.startEditing()
 
-        for count, i in enumerate(data_points):
+        for _, i in enumerate(data_points):
             g = QgsGeometry()
             fet = QgsFeature()
             d = bytes.fromhex(i[0])

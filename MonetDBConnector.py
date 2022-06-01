@@ -261,18 +261,33 @@ class MonetDBConnector:
         except IndexError:
             self.logger.log(f"Unable to get the GEOM type from this table.", Qgis.Critical) 
             
-
+        q_getsrid = f"SELECT st_srid({column}) FROM {schema}.{table_name}"
+        # we assume that the first SRID is the same across the column 
+        col_srid = db.query(q_getsrid)[0][0]
+        self.logger.log(f"Column SRID={col_srid} (based on first element SRID)", Qgis.Info)
+        
         query = ""
-        if interpretation:
+        if col_srid == 0 and not interpretation:
+            query = f"SELECT st_asbinary(st_setsrid({column},4326)) FROM {schema}.{table_name}"
+            self.logger.log("Default SRID set to 4326", Qgis.Info)
+        elif col_srid == 0:
+            query = f"SELECT st_asbinary(st_setsrid({column},{interpretation})) FROM {schema}.{table_name}"
+            self.logger.log(f"Data does **not** have SRID! Interpreted as {interpretation}", Qgis.Info)
+        elif interpretation:
             query = f"SELECT st_asbinary(st_transform({column},{interpretation})) FROM {schema}.{table_name}"
         else:
             query = f"SELECT st_asbinary({column}) FROM {schema}.{table_name}"
-
         data_points = db.query(query)
 
         self.logger.log(f"Received data points length: {len(data_points)}", Qgis.Info) 
-      
-        vl = QgsVectorLayer(geom_type, table_name, "memory")
+     
+        crs = 4326
+        if interpretation:
+            crs = interpretation
+        elif col_rid:
+            crs = col_rid
+        
+        vl = QgsVectorLayer(f"{geom_type}?crs=epsg:{crs}", table_name, "memory")
         if not vl.isValid():
             self.logger.error("layer failed to load", Qgis.Critical)
 

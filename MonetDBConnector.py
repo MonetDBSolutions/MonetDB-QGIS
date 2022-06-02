@@ -284,8 +284,8 @@ class MonetDBConnector:
         crs = 4326
         if interpretation:
             crs = interpretation
-        elif col_rid:
-            crs = col_rid
+        elif col_srid:
+            crs = col_srid
         
         vl = QgsVectorLayer(f"{geom_type}?crs=epsg:{crs}", table_name, "memory")
         if not vl.isValid():

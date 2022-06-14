@@ -10,8 +10,9 @@ def show_table_config_dialog(table_conf, db):
     rows = list(chunk(selected, 3))
 
     col_names = []
+
     for i in rows:
-        q = f"SELECT name FROM sys.describe_columns('{i[1].text()}', '{i[0].text()}')"
+        q = f"SELECT * FROM sys.describe_columns('{i[1].text()}', '{i[0].text()}') WHERE type = 'geometry' "
         result = db.query(q)
         for x in result:
             col_names.append((x[0], i[0].text(), i[1].text()))

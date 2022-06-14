@@ -252,7 +252,7 @@ class MonetDBConnector:
 
         col_type_data = db.query(query_for_col_type)
 
-        self.logger.log(f"col_type_data: {col_type_data}", Qgis.Info) 
+        self.logger.log(f"col_type_data: {col_type_data[:5]}", Qgis.Info) 
 
         geom_type = None
 
